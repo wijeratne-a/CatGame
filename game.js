@@ -1414,12 +1414,9 @@ function update() {
             
             projectiles = projectiles.filter(p => p.active);
             
-            // Boss defeat
+            // Boss defeat - show victory screen immediately
             if (!boss.alive) {
-                bossDefeatTimer++;
-                if (bossDefeatTimer >= 60) {
-                    gameState = GameState.VICTORY;
-                }
+                gameState = GameState.VICTORY;
             }
         }
     }
