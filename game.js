@@ -279,8 +279,8 @@ class Player {
             this.vx = 0;
         }
         
-        // Jump (only in PLAYING state, not BOSS)
-        if (gameState === GameState.PLAYING) {
+        // Jump (allowed in both PLAYING and BOSS states)
+        if (gameState === GameState.PLAYING || gameState === GameState.BOSS) {
             if (keys.up && keyState.upPressed) {
                 if (this.onGround) {
                     this.vy = CONFIG.jumpStrength;
@@ -372,35 +372,108 @@ class Player {
             return; // Skip rendering this frame
         }
         
-        // Draw cat body (rounded rectangle)
-        ctx.fillStyle = '#ffb6c1'; // Pastel pink
+        // Draw cat body (pastel peach/orange, rounded chibi shape)
+        ctx.fillStyle = '#ffcc99'; // Pastel peach/orange
         ctx.beginPath();
-        ctx.roundRect(screenX, screenY, this.width, this.height, 8);
+        ctx.roundRect(screenX, screenY + 8, this.width, this.height - 8, 12);
         ctx.fill();
         
-        // Draw ears
+        // Draw white chest/belly
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(screenX + 4, screenY + 16, this.width - 8, this.height - 12, 8);
+        ctx.fill();
+        
+        // Draw brown/orange stripes on back
+        ctx.strokeStyle = '#8b4513';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 8, screenY + 12);
+        ctx.quadraticCurveTo(screenX + this.width / 2, screenY + 16, screenX + this.width - 8, screenY + 12);
+        ctx.stroke();
+        
+        // Draw ears (triangular, with pink inner parts)
+        ctx.fillStyle = '#ffcc99';
+        ctx.beginPath();
+        ctx.moveTo(screenX + 4, screenY + 2);
+        ctx.lineTo(screenX + 10, screenY + 8);
+        ctx.lineTo(screenX + 6, screenY + 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(screenX + this.width - 4, screenY + 2);
+        ctx.lineTo(screenX + this.width - 10, screenY + 8);
+        ctx.lineTo(screenX + this.width - 6, screenY + 10);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Draw pink inner ears
         ctx.fillStyle = '#ffb6c1';
         ctx.beginPath();
-        ctx.ellipse(screenX + 6, screenY + 4, 6, 8, 0, 0, Math.PI * 2);
+        ctx.moveTo(screenX + 5, screenY + 4);
+        ctx.lineTo(screenX + 9, screenY + 8);
+        ctx.lineTo(screenX + 6, screenY + 9);
+        ctx.closePath();
         ctx.fill();
         ctx.beginPath();
-        ctx.ellipse(screenX + this.width - 6, screenY + 4, 6, 8, 0, 0, Math.PI * 2);
+        ctx.moveTo(screenX + this.width - 5, screenY + 4);
+        ctx.lineTo(screenX + this.width - 9, screenY + 8);
+        ctx.lineTo(screenX + this.width - 6, screenY + 9);
+        ctx.closePath();
         ctx.fill();
         
-        // Draw eyes
+        // Draw white muzzle (inverted triangle)
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(screenX + this.width / 2, screenY + 20);
+        ctx.lineTo(screenX + 8, screenY + 26);
+        ctx.lineTo(screenX + this.width - 8, screenY + 26);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Draw brown stripes on forehead and cheeks
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(screenX + 6, screenY + 10, 4, 2);
+        ctx.fillRect(screenX + this.width - 10, screenY + 10, 4, 2);
+        ctx.fillRect(screenX + this.width / 2 - 2, screenY + 8, 4, 2);
+        
+        // Draw large round eyes with white highlights
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(screenX + 10, screenY + 12, 4, 0, Math.PI * 2);
+        ctx.arc(screenX + 10, screenY + 14, 5, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(screenX + this.width - 10, screenY + 12, 4, 0, Math.PI * 2);
+        ctx.arc(screenX + this.width - 10, screenY + 14, 5, 0, Math.PI * 2);
         ctx.fill();
         
-        // Draw nose
-        ctx.fillStyle = '#ff69b4';
+        // White eye highlights
+        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(screenX + this.width / 2, screenY + 18, 3, 0, Math.PI * 2);
+        ctx.arc(screenX + 11, screenY + 13, 2, 0, Math.PI * 2);
         ctx.fill();
+        ctx.beginPath();
+        ctx.arc(screenX + this.width - 9, screenY + 13, 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw tiny black nose
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(screenX + this.width / 2, screenY + 24, 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw small mouth
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(screenX + this.width / 2, screenY + 25);
+        ctx.lineTo(screenX + this.width / 2 + 3, screenY + 27);
+        ctx.stroke();
+        
+        // Draw blue collar with silver buckle
+        ctx.fillStyle = '#87ceeb'; // Light blue
+        ctx.fillRect(screenX + 2, screenY + 28, this.width - 4, 4);
+        ctx.fillStyle = '#c0c0c0'; // Silver
+        ctx.fillRect(screenX + this.width / 2 - 3, screenY + 28, 6, 4);
     }
 }
 
@@ -455,33 +528,75 @@ class Enemy {
         const screenX = this.x - cameraX;
         const screenY = this.y;
         
-        // Draw poop body (brown rounded rectangle)
-        ctx.fillStyle = '#8b4513';
-        ctx.beginPath();
-        ctx.roundRect(screenX, screenY, this.width, this.height, 6);
-        ctx.fill();
+        // Draw poop body (three-tiered brown swirl)
+        const baseWidth = this.width;
+        const baseHeight = this.height;
         
-        // Draw cute face
-        ctx.fillStyle = '#fff';
+        // Base tier (widest)
+        ctx.fillStyle = '#8b5a3c'; // Medium brown
         ctx.beginPath();
-        ctx.arc(screenX + 8, screenY + 10, 3, 0, Math.PI * 2);
+        ctx.ellipse(screenX + baseWidth / 2, screenY + baseHeight - 6, baseWidth / 2, 8, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.beginPath();
-        ctx.arc(screenX + this.width - 8, screenY + 10, 3, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Draw smile
-        ctx.strokeStyle = '#fff';
+        ctx.strokeStyle = '#654321';
         ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(screenX + this.width / 2, screenY + 16, 5, 0, Math.PI);
         ctx.stroke();
         
-        // Draw spatula
-        ctx.fillStyle = '#c0c0c0';
-        ctx.fillRect(screenX + this.width - 4, screenY + 8, 8, 12);
-        ctx.fillStyle = '#8b4513';
-        ctx.fillRect(screenX + this.width - 2, screenY + 6, 4, 3);
+        // Middle tier
+        ctx.fillStyle = '#8b5a3c';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2, screenY + baseHeight - 12, baseWidth / 2.5, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Top tier (smallest)
+        ctx.fillStyle = '#8b5a3c';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2, screenY + baseHeight - 18, baseWidth / 3, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Add shading/highlights
+        ctx.fillStyle = '#a67c52';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2 - 2, screenY + baseHeight - 8, baseWidth / 3, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw friendly eyes (small black ovals)
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2 - 6, screenY + baseHeight - 10, 3, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2 + 6, screenY + baseHeight - 10, 3, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw friendly smile
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(screenX + baseWidth / 2, screenY + baseHeight - 6, 4, 0, Math.PI);
+        ctx.stroke();
+        
+        // Draw white sparkles/dots above
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(screenX + 4, screenY + 2, 2, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth - 4, screenY + 2, 2, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw spatula in hand (visible)
+        ctx.fillStyle = '#c0c0c0'; // Silver spatula handle
+        ctx.fillRect(screenX + baseWidth - 2, screenY + baseHeight - 14, 3, 10);
+        ctx.fillStyle = '#e0e0e0'; // Lighter silver for spatula head
+        ctx.beginPath();
+        ctx.roundRect(screenX + baseWidth - 4, screenY + baseHeight - 16, 6, 3, 1);
+        ctx.fill();
     }
 }
 
@@ -498,10 +613,23 @@ class Boss {
         this.alive = true;
         this.bobOffset = 0;
         this.bobDirection = 1;
+        this.vx = -1; // Horizontal movement speed
+        this.startX = x;
+        this.patrolDistance = 100; // How far boss moves left/right
     }
     
     update() {
         if (!this.alive) return;
+        
+        // Horizontal movement (patrol left/right within boss arena)
+        this.x += this.vx;
+        const minX = CONFIG.bossArenaX;
+        const maxX = CONFIG.bossArenaX + CONFIG.bossArenaWidth - this.width;
+        if (this.x <= minX || this.x >= maxX) {
+            this.vx = -this.vx;
+            // Clamp position to arena bounds
+            this.x = Math.max(minX, Math.min(maxX, this.x));
+        }
         
         // Small bobbing movement
         this.bobOffset += 0.1 * this.bobDirection;
@@ -549,37 +677,123 @@ class Boss {
         // Flash effect
         const flashing = this.flashTimer > 0 && Math.floor(this.flashTimer / 5) % 2 === 0;
         
-        // Draw boss body (large brown rounded rectangle)
-        ctx.fillStyle = flashing ? '#ff4444' : '#654321';
-        ctx.beginPath();
-        ctx.roundRect(screenX, screenY, this.width, this.height, 12);
-        ctx.fill();
-        
-        // Draw angry eyes
-        ctx.fillStyle = '#ff0000';
-        ctx.beginPath();
-        ctx.arc(screenX + 30, screenY + 35, 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(screenX + this.width - 30, screenY + 35, 12, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Draw angry eyebrows
+        // Draw steam/smoke puffs on sides
+        ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#000';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 2;
+        // Left steam puff
         ctx.beginPath();
-        ctx.moveTo(screenX + 20, screenY + 25);
-        ctx.lineTo(screenX + 40, screenY + 30);
+        ctx.ellipse(screenX - 15, screenY + 40, 12, 18, -0.3, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(screenX + this.width - 20, screenY + 25);
-        ctx.lineTo(screenX + this.width - 40, screenY + 30);
+        ctx.ellipse(screenX - 25, screenY + 50, 10, 15, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // Right steam puff
+        ctx.beginPath();
+        ctx.ellipse(screenX + this.width + 15, screenY + 40, 12, 18, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(screenX + this.width + 25, screenY + 50, 10, 15, 0.2, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
         
-        // Draw spatulas
-        ctx.fillStyle = '#c0c0c0';
-        ctx.fillRect(screenX - 8, screenY + 40, 12, 40);
-        ctx.fillRect(screenX + this.width - 4, screenY + 40, 12, 40);
+        // Draw boss body (large three-tiered brown swirl poop)
+        const baseWidth = this.width;
+        const baseHeight = this.height;
+        
+        // Base tier (widest)
+        ctx.fillStyle = flashing ? '#ff4444' : '#8b5a3c';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2, screenY + baseHeight - 20, baseWidth / 2, 35, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Middle tier
+        ctx.fillStyle = flashing ? '#ff4444' : '#8b5a3c';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2, screenY + baseHeight - 50, baseWidth / 2.5, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Top tier (smallest)
+        ctx.fillStyle = flashing ? '#ff4444' : '#8b5a3c';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2, screenY + baseHeight - 80, baseWidth / 3, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Add shading
+        ctx.fillStyle = '#a67c52';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2 - 5, screenY + baseHeight - 25, baseWidth / 3, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw angry eyes (large round brown with black pupils)
+        ctx.fillStyle = '#8b4513';
+        ctx.beginPath();
+        ctx.arc(screenX + 40, screenY + 60, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(screenX + this.width - 40, screenY + 60, 18, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(screenX + 40, screenY + 60, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(screenX + this.width - 40, screenY + 60, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw furrowed angry eyebrows
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 25, screenY + 45);
+        ctx.lineTo(screenX + 50, screenY + 52);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(screenX + this.width - 25, screenY + 45);
+        ctx.lineTo(screenX + this.width - 50, screenY + 52);
+        ctx.stroke();
+        
+        // Draw wide open angry mouth with teeth
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.ellipse(screenX + baseWidth / 2, screenY + baseHeight - 15, 30, 20, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw teeth
+        ctx.fillStyle = '#ffffff';
+        // Top teeth
+        ctx.fillRect(screenX + baseWidth / 2 - 12, screenY + baseHeight - 20, 5, 8);
+        ctx.fillRect(screenX + baseWidth / 2 - 2, screenY + baseHeight - 20, 5, 8);
+        ctx.fillRect(screenX + baseWidth / 2 + 8, screenY + baseHeight - 20, 5, 8);
+        // Bottom teeth
+        ctx.fillRect(screenX + baseWidth / 2 - 12, screenY + baseHeight - 8, 5, 8);
+        ctx.fillRect(screenX + baseWidth / 2 - 2, screenY + baseHeight - 8, 5, 8);
+        ctx.fillRect(screenX + baseWidth / 2 + 8, screenY + baseHeight - 8, 5, 8);
+        
+        // Draw spatulas (one on each side, visible)
+        ctx.fillStyle = '#c0c0c0'; // Silver handle
+        ctx.fillRect(screenX - 10, screenY + 70, 4, 35);
+        ctx.fillRect(screenX + this.width + 6, screenY + 70, 4, 35);
+        ctx.fillStyle = '#e0e0e0'; // Lighter silver spatula head
+        ctx.beginPath();
+        ctx.roundRect(screenX - 12, screenY + 65, 8, 6, 1);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(screenX + this.width + 4, screenY + 65, 8, 6, 1);
+        ctx.fill();
     }
 }
 
@@ -924,6 +1138,7 @@ function startGame() {
     player = new Player(50, CONFIG.groundY - CONFIG.playerHeight);
     cameraX = 0;
     lastCheckpoint = { x: 50, y: CONFIG.groundY - CONFIG.playerHeight };
+    bossDefeatTimer = 0;
     initializeLevel();
 }
 
@@ -931,6 +1146,7 @@ function startBoss() {
     gameState = GameState.BOSS;
     // Lock camera to boss arena
     cameraX = CONFIG.bossArenaX;
+    bossDefeatTimer = 0;
 }
 
 function pauseGame() {
@@ -1051,10 +1267,10 @@ function update() {
             cameraX = CONFIG.bossArenaX;
         }
         
-        // Dynamic enemy spawning
+        // Dynamic enemy spawning (spawn ahead of player)
         if (gameState === GameState.PLAYING) {
             for (const zone of CONFIG.spawnZones) {
-                if (!spawnedZones.has(zone.x) && player.x >= zone.x - 200) {
+                if (!spawnedZones.has(zone.x) && player.x >= zone.x - 500) {
                     spawnedZones.add(zone.x);
                     for (let i = 0; i < zone.count; i++) {
                         const platform = platforms[Math.floor(Math.random() * platforms.length)];
