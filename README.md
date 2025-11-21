@@ -1,5 +1,7 @@
 # Laser Kitty vs. The Grilled Shits
 
+**[🎮 Play the Game Now →](https://wijeratne-a.github.io/CatGame/)**
+
 A 2D platformer game built with HTML5 Canvas and JavaScript.
 
 ## How to Run
