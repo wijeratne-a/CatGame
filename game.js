@@ -1,5 +1,5 @@
 /*
- * LASER KITTY VS. THE GRILLED POOPOCALYPSE
+ * LASER KITTY VS. THE GRILLED SHITS
  * 
  * ARCHITECTURE:
  * 
@@ -1290,7 +1290,7 @@ function renderMenu(ctx) {
     ctx.font = 'bold 48px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('Laser Kitty vs.', CONFIG.canvasWidth / 2, 150);
-    ctx.fillText('The Grilled Poopocalypse', CONFIG.canvasWidth / 2, 200);
+    ctx.fillText('The Grilled Shits', CONFIG.canvasWidth / 2, 200);
     
     // Instructions
     ctx.font = '24px Arial';

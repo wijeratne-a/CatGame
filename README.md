@@ -1,4 +1,4 @@
-# Laser Kitty vs. The Grilled Poopocalypse
+# Laser Kitty vs. The Grilled Shits
 
 A 2D platformer game built with HTML5 Canvas and JavaScript.
 
